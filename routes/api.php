@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ClienteController;
+use App\Http\Controllers\MarcaController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -22,6 +23,9 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 Route::get('/', function () {
     return ["response json" => 'sim'];
 });
+
+
+
 
 Route::apiResource('cliente', 'App\Http\Controllers\ClienteController');
 Route::apiResource('carro', 'App\Http\Controllers\CarroController');
