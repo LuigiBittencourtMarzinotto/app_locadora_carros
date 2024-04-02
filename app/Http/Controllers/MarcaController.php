@@ -20,7 +20,8 @@ class MarcaController extends Controller
     public function index()
     {   
         $marcas = $this->marca->all();
-        return $marcas;
+        return response()->json($marcas,200);
+
     }
 
     /**
@@ -41,9 +42,16 @@ class MarcaController extends Controller
      */
     public function store(StoreMarcaRequest $request)
     {
-        $marca = $this->marca->create($request->all());
-        return $marca;
-        
+        $request->validate($this->marca->ruler(),$this->marca->feedback());
+        // nesse validate, como ja diz ele valida as regras foram atendidas caso nao forem ele retorna o feedback
+        // compativel com ele
+        $img = $request->file('imagem');
+        $pathImg = $img->store('imagens','public');
+        $marca = $this->marca->create([
+            'nome' => $request->nome,
+            'imagem' => $pathImg        
+        ]);
+        return response()->json($marca,201);
     }
 
     /**
@@ -55,7 +63,12 @@ class MarcaController extends Controller
     public function show(int $marcaCodigo)
     { 
         $marca = $this->marca->find($marcaCodigo);
-        return $marca;
+        if(empty($marca))
+        {
+            return response()->json(['msg'=>'Recurso pesquisado nao existe'],404);
+        }
+        return response()->json($marca,200);
+
     }
 
     /**
@@ -79,8 +92,25 @@ class MarcaController extends Controller
     public function update(UpdateMarcaRequest $request, int $marcaCodigo)
     {
         $marca = $this->marca->find($marcaCodigo);
+
+        if(empty($marca))
+        {
+            return response()->json(['msg'=>'Impossivel realizar a requisição de update'],404);
+        }        
+        if($request->method() == "PATCH"){
+            $regrasDinamicas = array();
+            foreach($marca->ruler() as $input => $regra){
+                if(array_key_exists($input, $request->all())){
+                   $regrasDinamicas[$input] = $regra;
+                }
+            }
+            $request->validate($regrasDinamicas,$marca->feedback());
+        }else{
+            $request->validate($marca->ruler(),$marca->feedback());
+        }
         $marca = $marca->update($request->all());
-        return $marca;
+        return response()->json($marca,200);
+
     }
 
     /**
@@ -92,8 +122,13 @@ class MarcaController extends Controller
     public function destroy(int $marcaCodigo)
     {   
         $marca = $this->marca->find($marcaCodigo);
+        if(empty($marca))
+        {
+            return response()->json(['msg'=>'Impossivel realizar a requisição de destroy'],404);
+        }
         $marca->delete();
-        return ['msg'=>'marca excluida carai'];
+        return response()->json(['msg'=>'marca excluida carai'],200);
+
     }
 
 }
