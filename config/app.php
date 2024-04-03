@@ -175,6 +175,8 @@ return [
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
 
+        // JWT- auth, cadastrar no provider
+        Tymon\JWTAuth\Providers\LaravelServiceProvider::class,
     ],
 
     /*
